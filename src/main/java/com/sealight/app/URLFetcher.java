@@ -35,7 +35,11 @@ public class URLFetcher {
     public static final String SYLVANIA_LIGHT_TYPE = "https://www.sylvania-automotive.com/apps/vlrg-us/Vlrg/getPositions//%s/%s/%s/";
 
 
-    /*
+    public static String pickData(String url) {
+
+        return pickData(url, TRY_NUM);
+    }
+    /**
      * 爬取网页信息
      */
     public static String pickData(String url, Integer tryNum) {

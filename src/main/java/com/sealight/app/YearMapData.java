@@ -75,5 +75,6 @@ public class YearMapData {
         yearMap.put(61, "2015");
         yearMap.put(62, "2016");
         yearMap.put(63, "2017");
+        yearMap.put(64, "2018");
     }
 }

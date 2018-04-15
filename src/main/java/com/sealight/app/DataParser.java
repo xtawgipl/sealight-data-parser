@@ -5,7 +5,6 @@ import com.sealight.app.bean.DataBean;
 import com.sealight.app.bean.ParamBean;
 import com.sealight.app.util.ExcelUtil;
 import com.sealight.app.util.FileUtil;
-import com.sealight.app.util.SerUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -224,7 +223,9 @@ public class DataParser {
 
         final Map<Integer, List<ParamBean>> paramMap = new HashMap<>();
 
-        List<ParamBean> list = SerUtil.readObject("D:/data/cache/paramsList.dat", List.class);
+        List<ParamBean> list = ParamFactory.readDataFile(ParamFactory.PARAMSLIST, List.class);
+
+        final Map<Integer, String> allMakeMap = ParamFactory.readDataFile(ParamFactory.ALLMAKEMAPFILE, Map.class);
 
         for(int i = 0; i < list.size(); ++i){
             if(i == 0){
@@ -243,8 +244,8 @@ public class DataParser {
         }
         System.out.println("---");
         for(final Map.Entry<Integer, List<ParamBean>> param : paramMap.entrySet()) {
-            if(FileUtil.xlsExist(MakeMapData.allMakeMap.get(param.getKey()))){
-                System.out.println(MakeMapData.allMakeMap.get(param.getKey()) + " 制造商表格已经生成!");
+            if(FileUtil.xlsExist(allMakeMap.get(param.getKey()))){
+                System.out.println(allMakeMap.get(param.getKey()) + " 制造商表格已经生成!");
                 continue;
             }
             final List<DataBean> dataList = new ArrayList<>();
@@ -256,7 +257,7 @@ public class DataParser {
 
                         String lightTypeHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_LIGHT_TYPE,
                                 YearMapData.yearMap.get(p.getYearId()),
-                                MakeMapData.allMakeMap.get(p.getMakeId()),
+                                allMakeMap.get(p.getMakeId()),
                                 p.getType()), URLFetcher.TRY_NUM);
                         Map<String, Map<String, String>> lightTypeMap = lightTypeParser(lightTypeHtml);
 
@@ -277,7 +278,7 @@ public class DataParser {
                                 for(String detailUrl : detailUrlList){
                                     String detailHtml = URLFetcher.pickData(detailUrl, URLFetcher.TRY_NUM);
                                     String detailName = lightDetailHtml(detailHtml);
-                                    System.out.println(MakeMapData.allMakeMap.get(p.getMakeId()) + "  :  "
+                                    System.out.println(allMakeMap.get(p.getMakeId()) + "  :  "
                                             + YearMapData.yearMap.get(p.getYearId()) + "  :  "
                                             + p.getType() + "  :  "
                                             + detailName);
@@ -303,7 +304,7 @@ public class DataParser {
                                 for(String detailUrl : detailUrlList){
                                     String detailHtml = URLFetcher.pickData(detailUrl, URLFetcher.TRY_NUM);
                                     String detailName = lightDetailHtml(detailHtml);
-                                    System.out.println(MakeMapData.allMakeMap.get(p.getMakeId()) + "  :  "
+                                    System.out.println(allMakeMap.get(p.getMakeId()) + "  :  "
                                             + YearMapData.yearMap.get(p.getYearId()) + "  :  "
                                             + p.getType() + "  :  "
                                             + detailName);
@@ -329,7 +330,7 @@ public class DataParser {
                                 for(String detailUrl : detailUrlList){
                                     String detailHtml = URLFetcher.pickData(detailUrl, URLFetcher.TRY_NUM);
                                     String detailName = lightDetailHtml(detailHtml);
-                                    System.out.println(MakeMapData.allMakeMap.get(p.getMakeId()) + "  :  "
+                                    System.out.println(allMakeMap.get(p.getMakeId()) + "  :  "
                                             + YearMapData.yearMap.get(p.getYearId()) + "  :  "
                                             + p.getType() + "  :  "
                                             + detailName);
@@ -343,7 +344,7 @@ public class DataParser {
 
                         for(int i = 0; i < max; ++i){
                             DataBean dataBean = new DataBean();
-                            dataBean.setMake(MakeMapData.allMakeMap.get(p.getMakeId()));
+                            dataBean.setMake(allMakeMap.get(p.getMakeId()));
                             dataBean.setYear(YearMapData.yearMap.get(p.getYearId()));
                             dataBean.setType(p.getType());
                             Map<String, String> map = new HashMap<>();
@@ -359,7 +360,7 @@ public class DataParser {
                             dataList.add(dataBean);
                         }
                     }
-                    ExcelUtil.excelExport(MakeMapData.allMakeMap.get(param.getKey()), Constants.titles, dataList);
+                    ExcelUtil.excelExport(allMakeMap.get(param.getKey()), Constants.titles, dataList);
                 }
             });
         }
