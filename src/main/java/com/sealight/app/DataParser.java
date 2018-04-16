@@ -6,6 +6,7 @@ import com.sealight.app.bean.ParamBean;
 import com.sealight.app.util.ExcelUtil;
 import com.sealight.app.util.FileUtil;
 import org.jsoup.Jsoup;
+import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -146,7 +147,7 @@ public class DataParser {
         return lightTypeMap;
     }
 
-    private static List<String> getDetailUrlList(String detailHtml){
+    public static List<String> getDetailUrlList(String detailHtml){
         List<String> urlList = new ArrayList<>();
         Pattern pattern = Pattern.compile("(data-action=)(.*?)(\">)");
         Matcher matcher = pattern.matcher(detailHtml);
@@ -173,6 +174,50 @@ public class DataParser {
         }
         System.err.println("无灯类型详情!");
         return null;
+    }
+
+    /**
+     * 编号
+     * 提取最后一个数字
+     * @param
+     * @author zhangjj
+     * @Date 2018/4/16 14:28
+     * @return
+     * @exception
+     *
+     */
+    public static String getLightOrder(String url){
+        //https://www.sylvania-automotive.com/apps/vlrg-us/Vlrg/getVehicleNotes/1/608/
+        if(StringUtil.isBlank(url)){
+            System.err.println("error url : " + url);
+            return null;
+        }
+        url = url.substring(0, url.length() - 1);
+        return url.substring(url.lastIndexOf("/") + 1);
+    }
+
+
+    /**
+     * 解析灯的table表格，获取 key,value(key = 灯类型,value=灯型号)
+     * @param
+     * @author zhangjj
+     * @Date 2018/4/16 15:16
+     * @return
+     * @exception
+     *
+     */
+    public static Map<String, String> lightTableParser(String tableHtml){
+        Map<String, String> map = new HashMap<>();
+        Element lightDetailEle = Jsoup.parse(tableHtml).body();
+        Element tableBodyEle = lightDetailEle.getElementsByTag("tbody").get(0);
+        Elements trs = tableBodyEle.getElementsByTag("tr");
+        if(trs != null && trs.size() != 0){
+            Element tr = trs.get(0);
+            String key = tr.getElementsByTag("th").get(0).text();
+            String value = tr.getElementsByTag("td").get(0).text();
+            map.put(key, value);
+        }
+        return map;
     }
 
 
@@ -223,9 +268,11 @@ public class DataParser {
 
         final Map<Integer, List<ParamBean>> paramMap = new HashMap<>();
 
-        List<ParamBean> list = ParamFactory.readDataFile(ParamFactory.PARAMSLIST, List.class);
+        List<ParamBean> list = ParamFactory.readDataFile(Constants.PARAMSLIST, List.class);
 
-        final Map<Integer, String> allMakeMap = ParamFactory.readDataFile(ParamFactory.ALLMAKEMAPFILE, Map.class);
+        final Map<Integer, String> allMakeMap = ParamFactory.readDataFile(Constants.ALLMAKEMAPFILE, Map.class);
+
+        final LightTypeListData lightTypeListData = ParamFactory.readDataFile(Constants.LIGHTTYPELISTDATA, LightTypeListData.class);
 
         for(int i = 0; i < list.size(); ++i){
             if(i == 0){
@@ -266,7 +313,7 @@ public class DataParser {
 
                         Map<String, String> forwardMap = lightTypeMap.get("forward");
                         if(forwardMap != null && !forwardMap.isEmpty()){
-                            for(String forwardLight : LightTypeListData.forwardLightList){
+                            for(String forwardLight : lightTypeListData.getForwardLightList()){
                                 if(forwardMap.get(forwardLight) == null){
                                     continue;
                                 }
@@ -292,7 +339,7 @@ public class DataParser {
 
                         Map<String, String> exteriorMap = lightTypeMap.get("exterior");
                         if(exteriorMap != null && !exteriorMap.isEmpty()){
-                            for(String exteriorLight : LightTypeListData.exteriorLightList){
+                            for(String exteriorLight : lightTypeListData.getExteriorLightList()){
                                 if(exteriorMap.get(exteriorLight) == null){
                                     continue;
                                 }
@@ -318,7 +365,7 @@ public class DataParser {
 
                         Map<String, String> interiorMap = lightTypeMap.get("interior");
                         if(interiorMap != null && !interiorMap.isEmpty()){
-                            for(String interiorLight : LightTypeListData.interiorLightList){
+                            for(String interiorLight : lightTypeListData.getInteriorLightList()){
                                 if(interiorMap.get(interiorLight) == null){
                                     continue;
                                 }

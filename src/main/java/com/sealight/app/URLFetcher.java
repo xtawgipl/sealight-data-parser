@@ -35,6 +35,17 @@ public class URLFetcher {
     public static final String SYLVANIA_LIGHT_TYPE = "https://www.sylvania-automotive.com/apps/vlrg-us/Vlrg/getPositions//%s/%s/%s/";
 
 
+    /** 获取前灯列表, 参数:编号*/
+    public static final String SYLVANIA_FORWARD_LIST = "https://www.sylvania-automotive.com/apps/vlrg-us/Vlrg/getBulbTable/Forward/%s/";
+
+    /** 获取外灯列表, 参数:编号*/
+    public static final String SYLVANIA_EXTERIOR_LIST = "https://www.sylvania-automotive.com/apps/vlrg-us/Vlrg/getBulbTable/Exterior/%s/";
+
+    /** 获取内灯列表, 参数:编号*/
+    public static final String SYLVANIA_INTERIOR_LIST = "https://www.sylvania-automotive.com/apps/vlrg-us/Vlrg/getBulbTable/Interior/%s/";
+
+
+
     public static String pickData(String url) {
 
         return pickData(url, TRY_NUM);

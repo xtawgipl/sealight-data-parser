@@ -14,6 +14,14 @@ public class Constants {
     /** 表格存放目录*/
     public static final String FILE_PATH = "D:/data/";
 
+    public final static String ALLMAKEMAPFILE = "D:/data/cache/allMakeMap.dat";
+
+    public final static String ALLMAKEFORYEARMAP = "D:/data/cache/allMakeForYearMap.dat";
+
+    public final static String PARAMSLIST = "D:/data/cache/paramsList.dat";
+
+    public final static String LIGHTTYPELISTDATA = "D:/data/cache/LightTypeListData.dat";
+
     /** 表格 标识 */
     public static final String FILE_SIGN = "sealightData_";
 
