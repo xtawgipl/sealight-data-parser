@@ -7,6 +7,10 @@
     <version>0.0.1-SNAPSHOT</version>
     <description>sealight-data-parser</description>
 
+    <properties>
+        <java.version>1.8</java.version>
+        <maven.compiler.version>2.3.2</maven.compiler.version>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -33,6 +37,15 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
