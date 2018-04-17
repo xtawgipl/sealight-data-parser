@@ -6,6 +6,7 @@ import com.sealight.app.util.FileUtil;
 import com.sealight.app.util.SerUtil;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -162,62 +163,93 @@ public class ParamFactory {
      */
     private static void factory3(){
 
+        ExecutorService executorService = Executors.newFixedThreadPool(50);
+
         /**
          * 前灯
          */
-        Set<String> forwardLightSet = new HashSet<>();
+        Set<String> forwardLightSet = new ConcurrentSkipListSet<>();
         /**
          * 外灯
          */
-        Set<String> exteriorLightSet = new HashSet<>();
+        Set<String> exteriorLightSet = new ConcurrentSkipListSet<>();
         /**
          * 内灯
          */
-        Set<String> interiorLightSet = new HashSet<>();
+        Set<String> interiorLightSet = new ConcurrentSkipListSet<>();
 
         String yearHtml = URLFetcher.pickData(URLFetcher.SYLVANIA_YEAR);
         Map<Integer, String> yearMap = DataParser.yearParser(yearHtml);
         Map<Integer, String> allMakeMap = readDataFile(Constants.ALLMAKEMAPFILE, Map.class);
         List<ParamBean> paramsList = readDataFile(Constants.PARAMSLIST, List.class);
-        for(ParamBean param : paramsList){
-            String lightTypeHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_LIGHT_TYPE, yearMap.get(param.getYearId()),
-                    allMakeMap.get(param.getMakeId()),
-                    param.getType()));
-            Map<String, Map<String, String>> lightTypeMap = DataParser.lightTypeParser(lightTypeHtml);
-            Map<String, String> forwardMap = lightTypeMap.get("forward");
-            if(forwardMap != null){
-                for(Map.Entry<String, String> forwardLightEntry : forwardMap.entrySet()){
-                    String forwardTableHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_FORWARD_LIST, DataParser.getLightOrder(forwardLightEntry.getValue())));
-                    Map<String, String> map = DataParser.lightTableParser(forwardTableHtml);
-                    forwardLightSet.addAll(map.keySet());
-                }
-            }
 
-            Map<String, String> interiorMap = lightTypeMap.get("interior");
-            if(interiorMap != null){
-                for(Map.Entry<String, String> interiorMapLightEntry : interiorMap.entrySet()){
-                    String interiorMapTableHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_INTERIOR_LIST, DataParser.getLightOrder(interiorMapLightEntry.getValue())));
-                    Map<String, String> map = DataParser.lightTableParser(interiorMapTableHtml);
-                    interiorLightSet.addAll(map.keySet());
-                }
-            }
+        final CountDownLatch latch = new CountDownLatch(paramsList.size());
 
-            Map<String, String> exteriorMap = lightTypeMap.get("exterior");
-            if(exteriorMap != null){
-                for(Map.Entry<String, String> exteriorLightEntry : exteriorMap.entrySet()){
-                    String exteriorTableHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_EXTERIOR_LIST, DataParser.getLightOrder(exteriorLightEntry.getValue())));
-                    Map<String, String> map = DataParser.lightTableParser(exteriorTableHtml);
-                    exteriorLightSet.addAll(map.keySet());
+        for(final ParamBean param : paramsList){
+            executorService.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        String lightTypeHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_LIGHT_TYPE, yearMap.get(param.getYearId()),
+                                allMakeMap.get(param.getMakeId()),
+                                param.getType()));
+                        Map<String, Map<String, String>> lightTypeMap = DataParser.lightTypeParser(lightTypeHtml);
+                        Map<String, String> forwardMap = lightTypeMap.get("forward");
+                        if(forwardMap != null){
+                            for(Map.Entry<String, String> forwardLightEntry : forwardMap.entrySet()){
+                                String forwardTableHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_FORWARD_LIST, DataParser.getLightOrder(forwardLightEntry.getValue())));
+                                Map<String, String> map = DataParser.lightTableParser(forwardTableHtml);
+                                forwardLightSet.addAll(map.keySet());
+                                param.setForwardLightMap(map);
+                                break;//一次取完所有列表
+                            }
+                        }
+
+                        Map<String, String> interiorMap = lightTypeMap.get("interior");
+                        if(interiorMap != null){
+                            for(Map.Entry<String, String> interiorMapLightEntry : interiorMap.entrySet()){
+                                String interiorMapTableHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_INTERIOR_LIST, DataParser.getLightOrder(interiorMapLightEntry.getValue())));
+                                Map<String, String> map = DataParser.lightTableParser(interiorMapTableHtml);
+                                interiorLightSet.addAll(map.keySet());
+                                param.setInteriorLightMap(map);
+                                break;//一次取完所有列表
+                            }
+                        }
+
+                        Map<String, String> exteriorMap = lightTypeMap.get("exterior");
+                        if(exteriorMap != null){
+                            for(Map.Entry<String, String> exteriorLightEntry : exteriorMap.entrySet()){
+                                String exteriorTableHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_EXTERIOR_LIST, DataParser.getLightOrder(exteriorLightEntry.getValue())));
+                                Map<String, String> map = DataParser.lightTableParser(exteriorTableHtml);
+                                exteriorLightSet.addAll(map.keySet());
+                                param.setExteriorLightMap(map);
+                                break;//一次取完所有列表
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        latch.countDown();
+                    }
                 }
-            }
+            });
         }
 
-        LightTypeListData lightTypeListData = new LightTypeListData();
-        lightTypeListData.setExteriorLightList(exteriorLightSet);
-        lightTypeListData.setForwardLightList(forwardLightSet);
-        lightTypeListData.setInteriorLightList(interiorLightSet);
-        System.out.println(lightTypeListData);
-        writeDataFile(Constants.LIGHTTYPELISTDATA, lightTypeListData);
+        executorService.shutdown();
+
+        try {
+            latch.await();
+            LightTypeListData lightTypeListData = new LightTypeListData();
+            lightTypeListData.setExteriorLightList(exteriorLightSet);
+            lightTypeListData.setForwardLightList(forwardLightSet);
+            lightTypeListData.setInteriorLightList(interiorLightSet);
+
+            System.out.println(lightTypeListData);
+            writeDataFile(Constants.LIGHTTYPELISTDATA, lightTypeListData);
+            writeDataFile(Constants.PARAMSLIST_2, paramsList);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

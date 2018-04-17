@@ -56,7 +56,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.sealight.app.DataParser</mainClass>
+                            <mainClass>com.sealight.app.ParamFactory</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

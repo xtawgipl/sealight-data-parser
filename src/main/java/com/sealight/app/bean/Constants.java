@@ -20,6 +20,8 @@ public class Constants {
 
     public final static String PARAMSLIST = "D:/data/cache/paramsList.dat";
 
+    public final static String PARAMSLIST_2 = "D:/data/cache/paramsList_2.dat";
+
     public final static String LIGHTTYPELISTDATA = "D:/data/cache/LightTypeListData.dat";
 
     /** 表格 标识 */
