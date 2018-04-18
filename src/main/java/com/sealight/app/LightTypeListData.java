@@ -1,5 +1,7 @@
 package com.sealight.app;
 
+import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -9,7 +11,7 @@ import java.util.Set;
  * @author zhangjj
  * @create 2017-12-10 18:05
  **/
-public class LightTypeListData {
+public class LightTypeListData implements Serializable{
     /**
      * 前灯
      */

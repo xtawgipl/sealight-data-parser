@@ -124,7 +124,7 @@ public class ExcelUtilBackup {
 
         FileOutputStream fout = null;
         try {
-            fout = new FileOutputStream(Constants.FILE_PATH + Constants.FILE_SIGN + sheelName+".xls");
+            fout = new FileOutputStream(Constants.XLS_FILE_PATH + Constants.FILE_SIGN + sheelName+".xls");
             wb.write(fout);
         } catch (Exception e) {
             e.printStackTrace();
@@ -132,13 +132,6 @@ public class ExcelUtilBackup {
             if(fout != null){
                 try {
                     fout.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if(wb != null){
-                try {
-                    wb.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

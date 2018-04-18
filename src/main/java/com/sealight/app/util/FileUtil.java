@@ -21,6 +21,6 @@ public class FileUtil {
     }
 
     public static boolean xlsExist(String make){
-        return exist(Constants.FILE_PATH + Constants.FILE_SIGN + make + ".xls");
+        return exist(Constants.XLS_FILE_PATH + Constants.FILE_SIGN + make + ".xls");
     }
 }

@@ -245,11 +245,61 @@ public class ParamFactory {
             lightTypeListData.setInteriorLightList(interiorLightSet);
 
             System.out.println(lightTypeListData);
-            writeDataFile(Constants.LIGHTTYPELISTDATA, lightTypeListData);
             writeDataFile(Constants.PARAMSLIST_2, paramsList);
+            writeDataFile(Constants.LIGHTTYPELISTDATA, lightTypeListData);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+
+    private static void factory4(){
+        /**
+         * 前灯
+         */
+        Set<String> forwardLightSet = new ConcurrentSkipListSet<>();
+        /**
+         * 外灯
+         */
+        Set<String> exteriorLightSet = new ConcurrentSkipListSet<>();
+        /**
+         * 内灯
+         */
+        Set<String> interiorLightSet = new ConcurrentSkipListSet<>();
+        List<ParamBean> paramsList = readDataFile(Constants.PARAMSLIST_2, List.class);
+        for(ParamBean paramBean : paramsList){
+            if(paramBean.getExteriorLightMap() != null){
+                exteriorLightSet.addAll(paramBean.getExteriorLightMap().keySet());
+            }
+            if(paramBean.getForwardLightMap() != null){
+                forwardLightSet.addAll(paramBean.getForwardLightMap().keySet());
+            }
+            if(paramBean.getInteriorLightMap() != null){
+                interiorLightSet.addAll(paramBean.getInteriorLightMap().keySet());
+            }
+        }
+        LightTypeListData lightTypeListData = new LightTypeListData();
+        lightTypeListData.setExteriorLightList(exteriorLightSet);
+        lightTypeListData.setForwardLightList(forwardLightSet);
+        lightTypeListData.setInteriorLightList(interiorLightSet);
+//        writeDataFile(Constants.LIGHTTYPELISTDATA, lightTypeListData);
+
+
+        System.out.println("/**前灯 */");
+        for(String forward : forwardLightSet){
+            System.out.println(String.format("alLightList.add(\"%s\");", forward));
+        }
+        System.out.println();
+        System.out.println("/**外灯 */");
+        for(String exterior : exteriorLightSet){
+            System.out.println(String.format("alLightList.add(\"%s\");", exterior));
+        }
+        System.out.println();
+        System.out.println("/**内灯 */");
+        for(String interior : interiorLightSet){
+            System.out.println(String.format("alLightList.add(\"%s\");", interior));
+        }
+        System.out.println();
     }
 
     public static void main(String[] args) {
@@ -266,7 +316,7 @@ public class ParamFactory {
         factory2();*/
 
 
-        factory3();
+        factory4();
     }
 
 
