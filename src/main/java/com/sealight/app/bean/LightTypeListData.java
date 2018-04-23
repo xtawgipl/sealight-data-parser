@@ -1,4 +1,4 @@
-package com.sealight.app;
+package com.sealight.app.bean;
 
 import java.io.Serializable;
 import java.util.HashSet;

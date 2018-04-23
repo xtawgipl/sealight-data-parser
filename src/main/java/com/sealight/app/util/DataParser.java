@@ -1,10 +1,9 @@
-package com.sealight.app;
+package com.sealight.app.util;
 
+import com.sealight.app.ParamFactory;
 import com.sealight.app.bean.Constants;
-import com.sealight.app.bean.DataBean;
+import com.sealight.app.bean.LightTypeListData;
 import com.sealight.app.bean.ParamBean;
-import com.sealight.app.util.ExcelUtil;
-import com.sealight.app.util.FileUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
@@ -209,126 +208,15 @@ public class DataParser {
         Element tableBodyEle = lightDetailEle.getElementsByTag("tbody").get(0);
         Elements trs = tableBodyEle.getElementsByTag("tr");
         if(trs != null && trs.size() != 0){
-            Element tr = trs.get(0);
-            String key = tr.getElementsByTag("th").get(0).text();
-            String value = tr.getElementsByTag("td").get(0).text();
-            map.put(key, value);
+            Iterator<Element> iterator = trs.iterator();
+            while (iterator.hasNext()){
+                Element tr = iterator.next();
+                String key = tr.getElementsByTag("th").get(0).text();
+                String value = tr.getElementsByTag("td").get(0).text();
+                map.put(key, value);
+            }
+
         }
         return map;
     }
-
-
-    /*public static void main(String[] args) {
-
-
-
-
-        String yearHtml = URLFetcher.pickData(URLFetcher.SYLVANIA_YEAR);
-        Map<Integer, String> yearMap = DataParser.yearParser(yearHtml);
-        for(Map.Entry<Integer, String> entry : yearMap.entrySet()){
-            String makeHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_MAKE, entry.getKey()));
-//            System.out.println("makeHtml --> " + makeHtml);
-            Map<Integer, String> makeMap = makeParser(makeHtml);
-            System.out.println(entry.getValue() + " 年的制造商：");
-            for(Map.Entry<Integer, String> makeEntry : makeMap.entrySet()){
-                System.out.println("             " + makeEntry.getKey() + " -- > " + makeEntry.getValue());
-                String typeHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_TYPE, makeEntry.getKey(), entry.getKey()));
-//                System.out.println(typeHtml);
-                Map<Integer, String> typeMap = typeParser(typeHtml);
-                for(Map.Entry<Integer, String> typeEntry : typeMap.entrySet()){
-                    System.out.println("                                       " + typeEntry.getKey() + " -- > " + typeEntry.getValue());
-                    String lightTypeHtml = URLFetcher.pickData(String.format(URLFetcher.SYLVANIA_LIGHT_TYPE, entry.getValue(), makeEntry.getValue(), typeEntry.getValue()));
-//                    System.out.println(lightTypeHtml);
-                    Map<String, Map<String, String>> lightTypeMap = lightTypeParser(lightTypeHtml);
-                    Map<String, String> forwardMap = lightTypeMap.get("forward");
-                    if(forwardMap != null){
-                        for(Map.Entry<String, String> forwardLightEntry : forwardMap.entrySet()){
-                            String lightDetailHtml = URLFetcher.pickData(forwardLightEntry.getKey());
-//                            System.out.println(lightDetailHtml);
-                            List<String> detailUrlList = getDetailUrlList(lightDetailHtml);
-                            for(String detailUrl : detailUrlList){
-                                String detailHtml = URLFetcher.pickData(detailUrl);
-                                String detailName = lightDetailHtml(detailHtml);
-                                System.out.println("                                                " + detailName);
-                            }
-                        }
-                    }
-
-                }
-            }
-        }
-    }*/
-
-
-
-    public static void main(String[] args) throws FileNotFoundException {
-
-        final Map<Integer, List<ParamBean>> paramMap = new HashMap<>();
-
-        List<ParamBean> list = ParamFactory.readDataFile(Constants.PARAMSLIST_2, List.class);
-
-        final Map<Integer, String> allMakeMap = ParamFactory.readDataFile(Constants.ALLMAKEMAPFILE, Map.class);
-
-        for(int i = 0; i < list.size(); ++i){
-            if(i == 0){
-                List<ParamBean> paramBeans = new ArrayList<>();
-                paramBeans.add(list.get(i));
-                paramMap.put(list.get(i).getMakeId(), paramBeans);
-            }else if(paramMap.keySet().contains(list.get(i).getMakeId())){
-                List<ParamBean> paramBeans = paramMap.get(list.get(i).getMakeId());
-                paramBeans.add(list.get(i));
-                paramMap.put(list.get(i).getMakeId(), paramBeans);
-            }else{
-                List<ParamBean> paramBeans = new ArrayList<>();
-                paramBeans.add(list.get(i));
-                paramMap.put(list.get(i).getMakeId(), paramBeans);
-            }
-        }
-        System.out.println("---");
-        for(final Map.Entry<Integer, List<ParamBean>> param : paramMap.entrySet()) {
-            if(FileUtil.xlsExist(allMakeMap.get(param.getKey()))){
-                System.out.println(allMakeMap.get(param.getKey()) + " 制造商表格已经生成!");
-                continue;
-            }
-            final List<DataBean> dataList = new ArrayList<>();
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    LightTypeListData lightTypeListData = new LightTypeListData();
-                    for(final ParamBean p : param.getValue()){
-
-                        if(p.getInteriorLightMap() != null && !p.getInteriorLightMap().isEmpty()){
-//                            System.out.println(lightTypeListData.getInteriorLightList());
-//                            System.out.println(p.getInteriorLightMap().keySet());
-                            if(lightTypeListData.getInteriorLightList() == null){
-                                lightTypeListData.setInteriorLightList(new HashSet<>());
-                            }
-                            lightTypeListData.getInteriorLightList().addAll(p.getInteriorLightMap().keySet());
-                        }
-
-                        if(p.getForwardLightMap() != null && !p.getForwardLightMap().isEmpty()){
-                            if(lightTypeListData.getForwardLightList() == null){
-                                lightTypeListData.setForwardLightList(new HashSet<>());
-                            }
-                            lightTypeListData.getForwardLightList().addAll(p.getForwardLightMap().keySet());
-                        }
-
-                        if(p.getExteriorLightMap() != null && !p.getExteriorLightMap().isEmpty()){
-                            if(lightTypeListData.getExteriorLightList() == null){
-                                lightTypeListData.setExteriorLightList(new HashSet<>());
-                            }
-                            lightTypeListData.getExteriorLightList().addAll(p.getExteriorLightMap().keySet());
-                        }
-
-                    }
-                    System.out.println(String.format("开始生成：%s, 行数 %s ", allMakeMap.get(param.getKey()), param.getValue().size()));
-                    ExcelUtil.excelExport(allMakeMap.get(param.getKey()), lightTypeListData, param.getValue());
-                }
-            });
-        }
-
-        executorService.shutdown();
-
-    }
-
 }

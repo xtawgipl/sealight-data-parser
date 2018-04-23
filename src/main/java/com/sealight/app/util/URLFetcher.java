@@ -1,4 +1,4 @@
-package com.sealight.app;
+package com.sealight.app.util;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;

@@ -1,9 +1,12 @@
 package com.sealight.app;
 
 import com.sealight.app.bean.Constants;
+import com.sealight.app.bean.LightTypeListData;
 import com.sealight.app.bean.ParamBean;
+import com.sealight.app.util.DataParser;
 import com.sealight.app.util.FileUtil;
 import com.sealight.app.util.SerUtil;
+import com.sealight.app.util.URLFetcher;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -315,8 +318,9 @@ public class ParamFactory {
 
         factory2();*/
 
+        factory3();
 
-        factory4();
+//        factory4();
     }
 
 

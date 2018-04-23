@@ -1,1 +1,1 @@
-java -cp ./lib/* com.sealight.app.DataParser
+java -cp ./lib/* com.sealight.app.ParamFactory
